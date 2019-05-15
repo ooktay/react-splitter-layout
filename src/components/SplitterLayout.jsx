@@ -30,8 +30,10 @@ class SplitterLayout extends React.Component {
     this.handleMouseUp = this.handleMouseUp.bind(this);
     this.handleTouchMove = this.handleTouchMove.bind(this);
     this.handleSplitterMouseDown = this.handleSplitterMouseDown.bind(this);
+    this.toggleMinimize = this.toggleMinimize.bind(this);
     this.state = {
       secondaryPaneSize: 0,
+      minimized: false,
       resizing: false
     };
   }
@@ -131,6 +133,16 @@ class SplitterLayout extends React.Component {
     return secondaryPaneSize;
   }
 
+  toggleMinimize(e) {
+    e.preventDefault();
+    if (this.state.minimized) {
+      window.addEventListener('resize', this.handleResize);
+    } else {
+      window.removeEventListener('resize', this.handleResize);
+    }
+    this.setState(prevState => ({ minimized: !prevState.minimized }));
+  }
+
   handleResize() {
     if (this.splitter && !this.props.percentage) {
       const containerRect = this.container.getBoundingClientRect();
@@ -152,7 +164,7 @@ class SplitterLayout extends React.Component {
         top: e.clientY
       }, true);
       clearSelection();
-      this.setState({ secondaryPaneSize });
+      this.setState({ secondaryPaneSize, minimized: false });
     }
   }
 
@@ -192,7 +204,7 @@ class SplitterLayout extends React.Component {
       let size = null;
       if (children.length > 1 && i !== primaryIndex) {
         primary = false;
-        size = this.state.secondaryPaneSize;
+        size = this.state.minimized ? this.props.primaryMinSize : this.state.secondaryPaneSize;
       }
       wrappedChildren.push(
         <Pane vertical={this.props.vertical} percentage={this.props.percentage} primary={primary} size={size}>
@@ -206,13 +218,23 @@ class SplitterLayout extends React.Component {
         {wrappedChildren[0]}
         {wrappedChildren.length > 1 &&
           (
-            <div
-              role="separator"
-              className="layout-splitter"
+            <div role="separator"
               ref={(c) => { this.splitter = c; }}
-              onMouseDown={this.handleSplitterMouseDown}
-              onTouchStart={this.handleSplitterMouseDown}
-            />
+            >
+              <div
+                className="layout-splitter"
+                onMouseDown={this.handleSplitterMouseDown}
+                onTouchStart={this.handleSplitterMouseDown}
+              />
+              {this.props.splitterTitle && this.props.vertical &&
+                <div className='splitter-titlebar'>
+                  <span>{this.props.splitterTitle}</span>
+                  <a className="splitter-icon" onClick={this.toggleMinimize}>
+                    {this.props.splitterCloseIcon}
+                  </a>
+                </div>
+              }
+            </div>
           )
         }
         {wrappedChildren.length > 1 && wrappedChildren[1]}
@@ -232,7 +254,9 @@ SplitterLayout.propTypes = {
   onDragStart: PropTypes.func,
   onDragEnd: PropTypes.func,
   onSecondaryPaneSizeChange: PropTypes.func,
-  children: PropTypes.arrayOf(PropTypes.node)
+  children: PropTypes.arrayOf(PropTypes.node),
+  splitterTitle: PropTypes.string,
+  splitterCloseIcon: PropTypes.node
 };
 
 SplitterLayout.defaultProps = {

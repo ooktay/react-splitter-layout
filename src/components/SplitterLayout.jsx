@@ -229,6 +229,7 @@ class SplitterLayout extends React.Component {
               {this.props.splitterTitle && this.props.vertical &&
                 <div className='splitter-titlebar'>
                   <span>{this.props.splitterTitle}</span>
+                  {this.props.splitterExtra}
                   <a className="splitter-icon" onClick={this.toggleMinimize}>
                     {this.props.splitterCloseIcon}
                   </a>

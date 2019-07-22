@@ -66,8 +66,10 @@ class SplitterLayout extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.secondaryPaneSize !== this.state.secondaryPaneSize && this.props.onSecondaryPaneSizeChange) {
-      this.props.onSecondaryPaneSizeChange(this.state.secondaryPaneSize);
+    const prevSize = prevState.minimized ? prevProps.primaryMinSize : prevState.secondaryPaneSize;
+    const size = this.state.minimized ? this.props.primaryMinSize : this.state.secondaryPaneSize;
+    if (prevSize !== size && this.props.onSecondaryPaneSizeChange) {
+      this.props.onSecondaryPaneSizeChange(size);
     }
     if (prevState.resizing !== this.state.resizing) {
       if (this.state.resizing) {
